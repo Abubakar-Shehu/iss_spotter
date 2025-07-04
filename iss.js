@@ -1,3 +1,4 @@
+
 const needle = require("needle");
 
 /**
@@ -23,4 +24,33 @@ const fetchMyIP = function(callback) {
   });
 };
 
-module.exports = { fetchMyIP };
+
+const fetchCoordsByIP = (ip, callback) => {
+  needle.get(`http://ipwho.is/${ip}`, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+
+    if (response.statusCode !== 200) {
+      callback(Error(response.statusCode), null);
+      return;
+    }
+
+    //parse the returned body so we can check its information
+    //const parsedBody = JSON.parse(body);
+    //check if "success" is true or not
+    if (!body.success) {
+      const message = `Success status was ${body.success}. Server message says: ${body.message} when fetching for IP ${body.ip}`;
+      callback(Error(message), null);
+      return;
+    }
+
+    let coordinate = {
+      latitude: body.latitude,
+      longitude: body.longitude};
+    callback(null, coordinate);
+  });
+};
+
+module.exports = { fetchMyIP,fetchCoordsByIP };
